@@ -145,17 +145,19 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
   def flush
     # Do nothing if there's nothing to do ;)
     return if @metric_meters.empty? && @metric_timers.empty?
+    metric_meters_safe = @metric_meters.clone
+    metric_timers_safe = @metric_timers.clone
 
     event = LogStash::Event.new
     event.source_host = Socket.gethostname
-    @metric_meters.each do |name, metric|
+    metric_meters_safe.each do |name, metric|
       event["#{name}.count"] = metric.count
       event["#{name}.rate_1m"] = metric.one_minute_rate
       event["#{name}.rate_5m"] = metric.five_minute_rate
       event["#{name}.rate_15m"] = metric.fifteen_minute_rate
     end
 
-    @metric_timers.each do |name, metric|
+    metric_timers_safe.each do |name, metric|
       event["#{name}.count"] = metric.count
       event["#{name}.rate_1m"] = metric.one_minute_rate
       event["#{name}.rate_5m"] = metric.five_minute_rate
